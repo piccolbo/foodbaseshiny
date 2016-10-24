@@ -5,22 +5,61 @@
 # http://shiny.rstudio.com
 #
 
+## @knitr ui
 library(shiny)
 
+#food_data loaded in global.R
+sodium_quantiles = quantile(food_data$sodium, na.rm = TRUE)
+sodium_energy_quantiles =
+  quantile(food_data$sodium/(food_data$energy + 0.01), na.rm = TRUE)
+sodium_protein_quantiles =
+  quantile(food_data$sodium/(food_data$protein + 0.01), na.rm = TRUE)
+
+sodium_slider_input =
+  function(inputId, label, quantiles)
+    sliderInput(
+      inputId,
+      label,
+      round(quantiles[["0%"]], 2),
+      round(quantiles[["75%"]], 2),
+      round(quantiles[["25%"]], 2))
+
+
+ti =
+  function(name, placeholder)
+    textInput(name, name, "", "100%", placeholder)
 
 shinyUI(
   fluidPage(
     titlePanel("Nutritional Food Search"),
     p(a(href="http://www.ars.usda.gov/Services/docs.htm?docid=25700", "Dataset"),
       "from USDA"),
-    conditionalPanel(
-      'input.search_type == "Low Sodium"',
-      p("Simple search for low sodium foods. Minimize your sodium intake per amount of food, energy or protein")),
-    conditionalPanel(
-      'input.search_type == "Advanced"',
-      p("Advanced food search with dplyr-like syntax")),
+    ## @knitr  sidebar
     sidebarLayout(
       sidebarPanel(
         selectInput("search_type", "Search type", c("Low Sodium", "Advanced")),
-        uiOutput("search_params")),
+        ## @knitr conditionalPanel
+        conditionalPanel(
+          'input.search_type == "Low Sodium"',
+          p("Simple search for low sodium foods. Minimize your sodium intake per amount of food, energy or protein"),
+          textInput("food_type", "Food type", "", placeholder = "Partial food name, e.g. 'cheese' or empty"),
+          sodium_slider_input(
+            "sodium",
+            "max sodium per weight mg/100 g",
+            sodium_quantiles),
+          sodium_slider_input(
+            "sodium_energy",
+            "max sodium per energy mg/kcal",
+            sodium_energy_quantiles),
+          sodium_slider_input(
+            "sodium_protein",
+            "max sodium per protein mg/g",
+            sodium_protein_quantiles)),
+        conditionalPanel(
+          'input.search_type == "Advanced"',
+          p("Advanced food search with dplyr-like syntax"),
+          ti("mutate",  "e.g. 'ratio = sodium/energy, sodium/protein'"),
+          ti("filter",   "e.g. 'energy < 100'"),
+          ti("arrange", "e.g. 'desc(energy/sodium)'"),
+          ti("select", "e.g. 'food_desc, energy'"))),
       mainPanel(DT::dataTableOutput("food_data")))))
