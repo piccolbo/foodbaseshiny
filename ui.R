@@ -64,4 +64,5 @@ shinyUI(
           ti("filter",   "e.g. 'energy < 100'"),
           ti("arrange", "e.g. 'desc(energy/sodium)'"),
           ti("select", "e.g. 'food_desc, energy'"))),
+## @knitr mainPanel
       mainPanel(DT::dataTableOutput("food_data")))))
