@@ -5,10 +5,10 @@
 # http://shiny.rstudio.com
 #
 
-## @knitr ui
 library(shiny)
 
 #food_data loaded in global.R
+## @knitr sodium_slider
 sodium_quantiles = quantile(food_data$sodium, na.rm = TRUE)
 sodium_energy_quantiles =
   quantile(food_data$sodium/(food_data$energy + 0.01), na.rm = TRUE)
@@ -24,21 +24,22 @@ sodium_slider_input =
       round(quantiles[["75%"]], 2),
       round(quantiles[["25%"]], 2))
 
-
+## @knitr textinput_advanced
 ti =
   function(name, placeholder)
     textInput(name, name, "", "100%", placeholder)
 
+## @knitr ui
 shinyUI(
   fluidPage(
     titlePanel("Nutritional Food Search"),
     p(a(href="http://www.ars.usda.gov/Services/docs.htm?docid=25700", "Dataset"),
       "from USDA"),
-    ## @knitr  sidebar
+## @knitr  sidebar
     sidebarLayout(
       sidebarPanel(
         selectInput("search_type", "Search type", c("Low Sodium", "Advanced")),
-        ## @knitr conditionalPanel
+## @knitr conditionalPanel_sodium
         conditionalPanel(
           'input.search_type == "Low Sodium"',
           p("Simple search for low sodium foods. Minimize your sodium intake per amount of food, energy or protein"),
@@ -55,6 +56,7 @@ shinyUI(
             "sodium_protein",
             "max sodium per protein mg/g",
             sodium_protein_quantiles)),
+## @knitr conditionalPanel_advanced
         conditionalPanel(
           'input.search_type == "Advanced"',
           p("Advanced food search with dplyr-like syntax"),
