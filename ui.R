@@ -6,35 +6,37 @@
 #
 
 library(shiny)
+library(shinyWidgets)
 
 #food_data loaded in global.R
 ## @knitr sodium_slider
-sodium_quantiles = quantile(food_data$sodium, na.rm = TRUE)
+q099 = partial(quantile, na.rm = TRUE, probs = seq(0,1, .001))
+sodium_quantiles = q099(food_data["Sodium, Na"])
 sodium_energy_quantiles =
-  quantile(food_data$sodium/(food_data$energy + 0.01), na.rm = TRUE)
+  q099(food_data["Sodium, Na"]/(food_data$Energy + 1))
 sodium_protein_quantiles =
-  quantile(food_data$sodium/(food_data$protein + 0.01), na.rm = TRUE)
+  q099(food_data["Sodium, Na"]/(food_data$Protein + 1))
 
 sodium_slider_input =
   function(inputId, label, quantiles)
-    sliderInput(
-      inputId,
-      label,
-      round(quantiles[["0%"]], 2),
-      round(quantiles[["75%"]], 2),
-      round(quantiles[["25%"]], 2))
+      sliderTextInput(
+        inputId,
+        label,
+        choices = quantiles,
+        selected = quantiles[["99.0%"]]
+      )
 
 ## @knitr textinput_advanced
 ti =
   function(name, placeholder)
-    textInput(name, name, "", "100%", placeholder)
+    textInput(name, name, "", "100.0%", placeholder)
 
 ## @knitr ui
 shinyUI(
   fluidPage(
     titlePanel("Nutritional Food Search"),
-    p(a(href="http://www.ars.usda.gov/Services/docs.htm?docid=25700", "Dataset"),
-      "from USDA"),
+    p(a(href="https://www.ars.usda.gov/ARSUserFiles/80400525/Data/BFPDB/BFPD_csv_07132018.zip", "Dataset"),
+      "from USDA. Please verify nutritional information before ingesting anything as the data contains errors."),
 ## @knitr  sidebar
     sidebarLayout(
       sidebarPanel(
@@ -60,9 +62,9 @@ shinyUI(
         conditionalPanel(
           'input.search_type == "Advanced"',
           p("Advanced food search with dplyr-like syntax"),
-          ti("mutate",  "e.g. 'ratio = sodium/energy, sodium/protein'"),
-          ti("filter",   "e.g. 'energy < 100'"),
-          ti("arrange", "e.g. 'desc(energy/sodium)'"),
-          ti("select", "e.g. 'food_desc, energy'"))),
+          ti("new column",  "e.g. 'ratio = `Sodium, Na`/Energy, `Sodium, Na`/Protein'"),
+          ti("filter foods",   "e.g. 'Energy < 1000'"),
+          ti("order (default ascending)", "e.g. 'desc(Energy/`Sodium, Na`)'"),
+          ti("select columns", "e.g. 'long_name, Energy'"))),
 ## @knitr mainPanel
       mainPanel(DT::dataTableOutput("food_data")))))

@@ -1,21 +1,65 @@
 library(purrr)
-
+library(dplyr)
+library(tidyr)
 #from http://www.ars.usda.gov/Services/docs.htm?docid=25700
 #
 
 ## @knitr read_data
-food_data = read.table("sr28abbr/ABBREV.txt", sep = "^", quote = "~")
+##
 
-names(food_data) =
-  c("food_code", "food_desc", "water", "energy", "protein", "fat", "ash", "carbohydrate_plus_fiber", "fiber", "sugar", "calcium", "iron", "magnesium", "phosphorus", "potassium", "sodium", "zinc", "copper", "manganese", "selenium", "vitamin_c", "thiamin", "riboflavin", "niacin", "pantothenic_acid", "vitamin_b6", "folate_total", "folic_acid", "food_folate", "folate", "choline", "vitamin_b12", "vitamin_a", "vitamin_a_retinol", "retinol", "alpha_carotene", "beta_carotene", "beta_cryptoxanthin", "lycopene", "lutein", "vitamin_e", "vitamin_d", "vitamin_d_iu", "vitamin_k", "saturated_fatty_acids", "monounsaturated_fatty_acids", "polyunsaturated_fatty_acids", "cholesterol", "first_household_weight", "description_household_weight_1", "second_household_weight", "description_household_weight_2", "refuse")
+options(shiny.fullstacktrace = TRUE)
 
-food_data$food_desc =
+#This join is done before deployment, when necessary
+# products  =
+#   read.csv(
+#     "../food_data/BFPD_csv_07132018/Products.csv",
+#     stringsAsFactors = FALSE)
+# nutrients =
+#   pivot_wider(
+#     read.csv(
+#       "../food_data/BFPD_csv_07132018/Nutrients.csv",
+#       stringsAsFactors = FALSE),
+#     id_cols = "NDB_No",
+#     names_from = "Nutrient_name",
+#     values_from = "Output_value",
+#     values_fn = list(Output_value = mean))
+# food_data =
+#   select(
+#     inner_join(
+#       products,
+#       nutrients,
+#       c("NDB_Number" = "NDB_No")),
+#     long_name,
+#     manufacturer ,
+#     `Sodium, Na`,
+#     Energy,
+#     Protein,
+#     `Sugars, total`,
+#     `Carbohydrate, by difference`,
+#     `Iron, Fe`,
+#     `Total lipid (fat)`,
+#     `Fiber, total dietary`,
+#     `Fatty acids, total saturated`,
+#     `Calcium, Ca`,
+#     `Vitamin C, total ascorbic acid`,
+#     `Vitamin A, IU`,
+#     `Cholesterol`,
+#     `Fatty acids, total polyunsaturated`,
+#     `Fatty acids, total monounsaturated`,
+#     `Potassium, K`)
+# save(food_data, file = "food_data")
+
+load("food_data")
+
+food_data$long_name =
   paste0(
     "<a href=\"http://google.com/search?q=",
-    map(as.character(food_data$food_desc), URLencode), "\">",
-    food_data$food_desc,
+    map(paste(food_data$long_name, food_data$manufacturer), URLencode,  reserved=TRUE), "\">",
+    food_data$long_name,
     "</a>")
 
+orig_names = names(food_data)
 food_data %>%
   map(function(x) if(is.integer(x)) as.numeric(x) else x) %>%
   data.frame -> food_data
+names(food_data) = orig_names

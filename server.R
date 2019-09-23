@@ -45,20 +45,21 @@ shinyServer(function(input, output) {
           food_data %>%
             filter(
               grepl(
-                x = food_desc,
+                x = long_name,
                 pattern = default(input$food_type, ""),
                 ignore.case = TRUE)) %>%
-            filter(sodium <= default(input$sodium, 120)) %>%
-            filter(sodium/energy <= default(input$sodium_energy, 0.6)) %>%
-            filter(sodium/protein <= default(input$sodium_protein, 19)) %>%
-            select_(.dots = c("food_desc", "sodium", colnames(food_data)))},
+            filter(`Sodium, Na` <= default(input$sodium, Inf )) %>%
+            filter(`Sodium, Na`/Energy <= default(input$sodium_energy, Inf)) %>%
+            filter(`Sodium, Na`/Protein <= default(input$sodium_protein, Inf)) %>%
+            select_(.dots = c("long_name", "`Sodium, Na`", paste0("`", colnames(food_data),  "`")))},
 ## @knitr advanced_table
         Advanced = {
           food_data %>%
-            verb("mutate", "") %>%
-            verb("filter", "TRUE") %>%
-            verb("arrange", "food_code") %>%
-            verb("select", paste(names(food_data), collapse = ","))})
+            verb("mutate", input$`new column`) %>%
+            verb("filter", input$`filter foods`) %>%
+            verb("arrange", input$`order (default ascending)`) %>%
+            verb("select", input$`select columns`)})
     },
-    escape = FALSE)
+    escape = FALSE,
+    options = list(autoWidth = TRUE))
 })
