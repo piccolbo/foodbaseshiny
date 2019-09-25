@@ -11,7 +11,7 @@ library(shinyWidgets)
 #food_data loaded in global.R
 ## @knitr sodium_slider
 q099 = partial(quantile, na.rm = TRUE, probs = seq(0,1, .001))
-sodium_quantiles = q099(food_data["Sodium, Na"])
+sodium_quantiles = q099(food_data$`Sodium, Na`)
 sodium_energy_quantiles =
   q099(food_data["Sodium, Na"]/(food_data$Energy + 1))
 sodium_protein_quantiles =
@@ -65,6 +65,6 @@ shinyUI(
           ti("new column",  "e.g. 'ratio = `Sodium, Na`/Energy, `Sodium, Na`/Protein'"),
           ti("filter foods",   "e.g. 'Energy < 1000'"),
           ti("order (default ascending)", "e.g. 'desc(Energy/`Sodium, Na`)'"),
-          ti("select columns", "e.g. 'long_name, Energy'"))),
+          ti("select columns", "e.g. 'description, Energy'"))),
 ## @knitr mainPanel
       mainPanel(DT::dataTableOutput("food_data")))))
