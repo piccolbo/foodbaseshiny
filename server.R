@@ -17,10 +17,10 @@ default =
   function(x, value, condition = is.null)
     if(condition(x)) value else x
 
-parse_field =
-  function(field) {
-    as.list(
-      parse(text = paste0("list(", field, ")"))[[1]][-1])}
+# parse_field =
+#   function(field) {
+#     as.list(
+#       parse(text = paste0("list(", field, ")"))[[1]][-1])}
 
 
 ## @knitr shinyServer
@@ -28,12 +28,18 @@ parse_field =
 shinyServer(function(input, output) {
 
 ## @knitr verb
-  verb =
-    function(data, name, val) {
-      get(paste0(name, "_"))(
-        data,
-        .dots =
-          parse_field(default(input[[name]], val, function(x) is.null(x) || x == "")))}
+  # verb =
+  #   function(data, name, val) {
+  #     get(paste0(name, "_"))(
+  #       data,
+  #       .dots =
+  #         parse_field(default(input[[name]], val, function(x) is.null(x) || x == "")))}
+
+  verb = function(data, name, val) {
+    get(paste0(name, "_"))(
+      data,
+      .dots = default(input[[name]], val))
+  }
 
 ## @knitr main_table
   output$food_data =
@@ -45,13 +51,12 @@ shinyServer(function(input, output) {
           food_data %>%
             filter(
               grepl(
-                x = long_name,
+                x = description,
                 pattern = default(input$food_type, ""),
                 ignore.case = TRUE)) %>%
             filter(`Sodium, Na` <= default(input$sodium, Inf )) %>%
             filter(`Sodium, Na`/Energy <= default(input$sodium_energy, Inf)) %>%
-            filter(`Sodium, Na`/Protein <= default(input$sodium_protein, Inf)) %>%
-            select_(.dots = c("long_name", "`Sodium, Na`", paste0("`", colnames(food_data),  "`")))},
+            filter(`Sodium, Na`/Protein <= default(input$sodium_protein, Inf))},
 ## @knitr advanced_table
         Advanced = {
           food_data %>%
